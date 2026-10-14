@@ -182,32 +182,32 @@ async function saveCfg(){await put('cfg/main',ST.cfg);ready()}
 /* Data simulasi: buka 9 Maret 2026 s/d hari ini, 1 karyawan, min. 15 cup/hari, restock otomatis */
 function genDemo(){
  let a=515;const rnd=()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
- const E=ST.cfg.emps[0],stn=E.stn,H=36e5,now=Date.now(),W=[2,3,8,2,3,3,3,6,3,8,14,9,2,5,1.5,4,4,4,2,3,1.5,5,1,4,6,1,.5,.5],TW=W.reduce((x,y)=>x+y,0),
-  pick=()=>{let r=rnd()*TW,i=0;while(r>W[i]&&i<27)r-=W[i++];return MENU[i]},gd={},bc={},S={},L={};
+ const EM=ST.cfg.emps,K=EM[0],Pg=EM[1]||EM[0],stn=stns()[0][0],H=36e5,now=Date.now(),W=[2,3,8,2,3,3,3,6,3,8,14,9,2,5,1.5,4,4,4,2,3,1.5,5,1,4,6,1,.5,.5],TW=W.reduce((x,y)=>x+y,0),
+  pick=()=>{let r=rnd()*TW,i=0;while(r>W[i]&&i<27)r-=W[i++];return MENU[i]},gd={},bc={},S={},L={},X={};
  SEEDI.forEach(x=>{gd[x[0]]=x[5];bc[x[0]]=x[6]});
  for(let d=new Date(2026,2,9),n=0;d.getTime()<=now;d.setDate(d.getDate()+1),n++){
-  const t0=d.getTime(),day=dayS(t0),w=d.getDay(),cups=Math.max(15,Math.round((17+n/220*9)*(w%6==0?1.3:w==5?1.1:1)*(.85+rnd()*.3))),use={},txs=[];let left=cups;
+  const t0=d.getTime(),day=dayS(t0),w=d.getDay(),cups=Math.max(15,Math.round((17+n/220*9)*(w%6==0?1.3:w==5?1.1:1)*(.85+rnd()*.3))),use={},txs=[],wk=Math.floor(n/7),AM=wk%2?Pg:K,PM=wk%2?K:Pg;let left=cups;
   while(left>0){const k=Math.min(left,1+(rnd()<.45)+(rnd()<.15)),m={},nd={};left-=k;
    for(let j=0;j<k;j++){const x=pick();m[x.id]=(m[x.id]||0)+1}
    const items=[];let total=0,hpp=0;
    Object.entries(m).forEach(([id,q])=>{const x=mn(id);items.push({n:x.n,tmp:'',q,p:x.p});total+=x.p*q;(ST.cfg.rec[id]||[]).forEach(([i,u])=>nd[i]=(nd[i]||0)+u*q)});
    Object.entries(nd).forEach(([i,u])=>{hpp+=u*ig(i).c;use[i]=(use[i]||0)+u});
    const r=[5e3,1e4,5e4][rnd()*3|0];txs.push({items,total,hpp,cash:rnd()<.4?total:Math.ceil(total/r)*r})}
-  const hi=Math.min(21*H,now-t0),lo=Math.min(10*H,hi*.5),ts=txs.map(()=>lo+rnd()*(hi-lo)).sort((x,y)=>x-y),T=x=>Math.min(Math.round(x),now);
-  const rows=txs.map((x,i)=>{const t=T(t0+ts[i]);return{id:t,t,stn,emp:E.name,...x}}),lr=[];let mi=0;
+  const lim=now-t0,T=x=>Math.min(Math.round(x),now),ts=txs.map(()=>{const sh=rnd()<.42?0:1,a=[6.5,15][sh]*H,b=[15,23.5][sh]*H;let x=a+rnd()*(b-a);if(x>lim)x=lim*(.3+rnd()*.7);return x}).sort((x,y)=>x-y);
+  const rows=txs.map((x,i)=>{const t=T(t0+ts[i]);return{id:t,t,stn,emp:(ts[i]<15*H?AM:PM).name,...x}}),lr=[];let mi=0;
   SEEDI.forEach(x=>{const i=x[0],vol=x[5]/3,u=use[i]||0;if(bc[i]<u*1.1+x[4]){const step=x[2]==='pcs'?10:50,amt=Math.ceil((u*2.2+x[4]-bc[i])/step)*step;
-   if(gd[i]<amt){const pk=Math.max(1,Math.ceil((amt*2-gd[i])/vol)),h=Math.round(pk*vol*x[3]);gd[i]+=pk*vol;lr.push({t:T(t0+8*H+(mi++)*6e4),emp:E.name,stn,k:'beli',i,q:pk*vol,h,n:'Beli '+rp(h)})}
-   gd[i]-=amt;bc[i]+=amt;lr.push({t:T(t0+8.5*H+(mi++)*6e4),emp:E.name,stn,k:'tarik',i,q:amt,n:'Gudang → '+sn(stn)})}});
+   if(gd[i]<amt){const pk=Math.max(1,Math.ceil((amt*2-gd[i])/vol)),h=Math.round(pk*vol*x[3]);gd[i]+=pk*vol;lr.push({t:T(t0+7*H+(mi++)*6e4),emp:AM.name,stn,k:'beli',i,q:pk*vol,h,n:'Beli '+rp(h)})}
+   gd[i]-=amt;bc[i]+=amt;lr.push({t:T(t0+7.5*H+(mi++)*6e4),emp:AM.name,stn,k:'tarik',i,q:amt,n:'Gudang → '+sn(stn)})}});
   Object.keys(use).forEach(i=>bc[i]-=use[i]);
-  lr.push({t:T(t0+21.1*H),emp:E.name,stn,k:'jual',n:'Penjualan harian',d:use});
-  S[day+'_'+stn]={day,stn,rows};L[day+'_'+stn]={day,stn,rows:lr}}
- ST.sales=S;ST.log=L;ST.stock.gudang={q:gd};ST.stock[stn]={q:bc};
- if(DB){Object.keys(S).forEach(k=>{put('sales/'+k,S[k]);put('log/'+k,L[k])});put('stock/gudang',ST.stock.gudang);put('stock/'+stn,ST.stock[stn])}else localSave();ready()}
+  lr.push({t:T(t0+23.5*H),emp:PM.name,stn,k:'jual',n:'Penjualan harian',d:use});
+  S[day+'_'+stn]={day,stn,rows};L[day+'_'+stn]={day,stn,rows:lr};X[day+'_'+stn]={day,stn,rows:[{t:T(t0+12*H),emp:K.name,n:'Uang makan karyawan',a:20000},{t:T(t0+12*H+6e4),emp:Pg.name,n:'Uang makan pengelola',a:50000}]}}
+ ST.sales=S;ST.log=L;ST.dexp=X;ST.stock.gudang={q:gd};ST.stock[stn]={q:bc};
+ if(DB){Object.keys(S).forEach(k=>{put('sales/'+k,S[k]);put('log/'+k,L[k]);put('dexp/'+k,X[k])});put('stock/gudang',ST.stock.gudang);put('stock/'+stn,ST.stock[stn])}else localSave();ready()}
 function seedAll(){
  if(seeding)return;seeding=true;
  ST.cfg={ing:SEEDI.map(a=>({id:a[0],n:a[1],u:a[2],c:a[3],m:a[4]})),
   ver:5,cleanedG:1,stn:STN0.map(x=>x.slice()),rec:SEEDREC,
-  emps:[{id:1,name:'Fendi Alamsyah',pin:'1111',stn:'basecamp'}],
+  regenV:2,mealsG:1,emps:[{id:1,name:'Fendi Alamsyah',pin:'1111',stn:'basecamp'},{id:2,name:'Pengelola',pin:'2222',stn:'basecamp'}],
   ownerPin:'1234',fixed:[{id:1,n:'Wifi / internet',a:241000},{id:2,n:'Air',a:50000},{id:3,n:'Listrik',a:1000000},{id:4,n:'Kebersihan',a:100000},{id:5,n:'Sewa rumah',a:1500000},{id:6,n:'Penyusutan mesin & alat bar',a:193611},{id:7,n:'Penyusutan showcase & freezer',a:316389},{id:8,n:'Penyusutan tatakan kursi & meja',a:41667},{id:9,n:'Penyusutan las meja & kursi',a:83333},{id:10,n:'Gaji karyawan',a:1820000}]};
  saveCfg();
  wr('stock','gudang',{q:Object.fromEntries(SEEDI.map(a=>[a[0],a[5]]))});
@@ -226,6 +226,8 @@ async function fbDB(){
   appId:"1:476542991117:web:1c66d981f85fda3bd34e44"});
  const db=D.getDatabase(app),R=p=>D.ref(db,'kasir/'+p),P=v=>{try{return JSON.parse(v)}catch(e){return null}};
  return{
+  wipe:async cs=>{for(const c of cs)await D.remove(R(c))},
+  fetch:async c=>{const sn=await D.get(R(c)),o={};sn.forEach(ch=>{o[ch.key]=P(ch.val())});return o},
   clean:async ids=>{for(const c of ['stock','sales','log','dexp']){const sn=await D.get(R(c));const ks=[];sn.forEach(ch=>{if(ids.some(i=>ch.key===i||ch.key.endsWith('_'+i)))ks.push(ch.key)});for(const k of ks)await D.remove(R(c+'/'+k))}},
   doc:p=>({
    set:d=>D.set(R(p),JSON.stringify(d)),
@@ -249,19 +251,33 @@ function cleanG(){
  if(DB&&DB.clean)DB.clean(G).catch(e=>console.error(e));
  saveCfg();
 }
+/* Buat ulang semua data transaksi (sekali jalan): 2 orang, shift 9 jam gantian tiap minggu */
+let regening=0;
+async function regen(){
+ if(regening)return;regening=1;
+ const C=ST.cfg;C.regenV=2;C.mealsG=1;C.cleanedG=1;
+ if((C.emps||[]).length<2)C.emps.push({id:Date.now(),name:'Pengelola',pin:'2222',stn:stns()[0][0]});
+ C.emps.forEach(e=>{if(!stns().some(x=>x[0]===e.stn))e.stn=stns()[0][0]});
+ saveCfg();
+ toast('Membuat ulang data, mohon tunggu...');
+ if(DB&&DB.wipe){try{await DB.wipe(['sales','log','dexp','stock'])}catch(e){console.error(e)}}
+ ST.sales={};ST.log={};ST.dexp={};ST.stock={};
+ genDemo();
+ toast('Data selesai dibuat ulang');
+}
 async function init(){
  try{DB=await fbDB()}catch(e){DB=null;console.error(e)}
  const err=()=>toast('Koneksi data terputus');
  if(DB){
-  DB.doc('cfg/main').onSnapshot(s=>{if(s.exists&&s.data().ver===5){ST.cfg=s.data();if(!ST.cfg.cleanedG)cleanG()}else if(!ST.cfg||s.exists)seedAll();ready()},err);
+  DB.doc('cfg/main').onSnapshot(s=>{if(s.exists&&s.data().ver===5){ST.cfg=s.data();if(!ST.cfg.cleanedG)cleanG();if(!ST.cfg.regenV)regen()}else if(!ST.cfg||s.exists)seedAll();ready()},err);
   const col=(c,q)=>q.onSnapshot(s=>{ST[c]={};s.docs.forEach(d=>ST[c][d.id]=d.data());ready()},err);
   col('stock',DB.collection('stock'));
-  col('sales',DB.collection('sales').orderBy('day','desc').limit(120));
-  col('dexp',DB.collection('dexp').orderBy('day','desc').limit(120));
-  col('log',DB.collection('log').orderBy('day','desc').limit(60));
+  col('sales',DB.collection('sales').orderBy('day','desc').limit(1000));
+  col('dexp',DB.collection('dexp').orderBy('day','desc').limit(1000));
+  col('log',DB.collection('log').orderBy('day','desc').limit(1000));
  }else{
   try{const l=JSON.parse(localStorage.getItem(LKEY));if(l&&l.cfg)ST=l}catch(e){}
-  if(!ST.cfg)seedAll();else if(!ST.cfg.cleanedG)cleanG();ready();
+  if(!ST.cfg)seedAll();else{if(!ST.cfg.cleanedG)cleanG();if(!ST.cfg.regenV)regen()}ready();
  }
 }
 const ing=id=>ST.cfg.ing.find(x=>x.id==id),ig=id=>ing(id)||{n:'(dihapus)',u:'',c:0,m:0},mn=id=>MENU.find(m=>m.id==id);
