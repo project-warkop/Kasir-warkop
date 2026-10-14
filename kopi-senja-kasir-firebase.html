@@ -272,9 +272,9 @@ async function init(){
   DB.doc('cfg/main').onSnapshot(s=>{if(s.exists&&s.data().ver===5){ST.cfg=s.data();if(!ST.cfg.cleanedG)cleanG();if(!ST.cfg.regenV)regen()}else if(!ST.cfg||s.exists)seedAll();ready()},err);
   const col=(c,q)=>q.onSnapshot(s=>{ST[c]={};s.docs.forEach(d=>ST[c][d.id]=d.data());ready()},err);
   col('stock',DB.collection('stock'));
-  col('sales',DB.collection('sales').orderBy('day','desc').limit(1000));
-  col('dexp',DB.collection('dexp').orderBy('day','desc').limit(1000));
-  col('log',DB.collection('log').orderBy('day','desc').limit(1000));
+  col('sales',DB.collection('sales').orderBy('day','desc').limit(5000));
+  col('dexp',DB.collection('dexp').orderBy('day','desc').limit(5000));
+  col('log',DB.collection('log').orderBy('day','desc').limit(5000));
  }else{
   try{const l=JSON.parse(localStorage.getItem(LKEY));if(l&&l.cfg)ST=l}catch(e){}
   if(!ST.cfg)seedAll();else{if(!ST.cfg.cleanedG)cleanG();if(!ST.cfg.regenV)regen()}ready();
@@ -488,6 +488,14 @@ $('m-emps').onclick=e=>{const d=e.target.dataset,x=ST.cfg.emps.find(y=>y.id==d.i
 /* ===== DASHBOARD (owner) ===== */
 const mrange=p=>{const m=/^(\d{4})-(\d\d)$/.exec(p||'');return m?[new Date(+m[1],+m[2]-1,1).getTime(),new Date(+m[1],+m[2],1).getTime()]:null};
 const mlabel=p=>{const r=mrange(p);return r?new Date(r[0]).toLocaleDateString('id-ID',{month:'long',year:'numeric'}):''};
+const BLN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+let pickY=new Date().getFullYear();
+function monthPick(){
+ const MR=mrange(per),cy=new Date().getFullYear();let ey=cy;
+ [...allSales().map(x=>x.t),...dexRows().map(x=>x.t)].forEach(t=>{const y=new Date(t).getFullYear();if(y<ey)ey=y});
+ const y0=Math.min(ey,cy-3),sy=MR?new Date(MR[0]).getFullYear():pickY,sm=MR?new Date(MR[0]).getMonth():-1,st='padding:10px;border-radius:10px;border:1px solid #8886;background:transparent;color:inherit';
+ let ys='';for(let y=cy;y>=y0;y--)ys+=`<option value="${y}"${y===sy?' selected':''}>${y}</option>`;
+ return `<div style="display:flex;gap:8px;align-items:center;padding:0 14px 10px"><span>📅</span><select id="mmon" style="flex:1;${st}"><option value="">— pilih bulan —</option>${BLN.map((n,i)=>`<option value="${String(i+1).padStart(2,'0')}"${i===sm?' selected':''}>${n}</option>`).join('')}</select><select id="myr" style="${st}">${ys}</select></div>`}
 function monthOpts(){let e=Date.now();[...allSales().map(x=>x.t),...dexRows().map(x=>x.t),...Object.values(ST.log).flatMap(d=>(d.rows||[]).map(x=>x.t))].forEach(t=>{if(t<e)e=t});
  const n=new Date(),o=[];for(let d=new Date(n.getFullYear(),n.getMonth(),1);d>=new Date(new Date(e).getFullYear(),new Date(e).getMonth(),1)&&o.length<36;d=new Date(d.getFullYear(),d.getMonth()-1,1)){const v=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');o.push(`<option value="${v}"${per===v?' selected':''}>${mlabel(v)}</option>`)}return o.join('')}
 function sales(){const t0=day0(Date.now()),m0=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime(),MR=mrange(per);
@@ -495,14 +503,14 @@ function sales(){const t0=day0(Date.now()),m0=new Date(new Date().getFullYear(),
  return allSales().filter(s=>per==='all'||(per==='1'?s.t>=t0:per==='m'?s.t>=m0:s.t>=t0-6*864e5))}
 function dash(){
  const ss=sales(),sum=(a,f)=>a.reduce((x,y)=>x+f(y),0),om=sum(ss,s=>s.total),hp=sum(ss,s=>s.hpp),it=sum(ss,s=>sum(s.items,x=>x.q));
- const m0=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime(),sm=allSales().filter(s=>s.t>=m0),omm=sum(sm,s=>s.total),hpm=sum(sm,s=>s.hpp),fx=fixedTotal(),dm=dexRows().filter(r=>r.t>=m0).reduce((a,r)=>a+r.a,0);
+ const m0=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime(),PR=mrange(per),sm=allSales().filter(s=>PR?(s.t>=PR[0]&&s.t<PR[1]):s.t>=m0),omm=sum(sm,s=>s.total),hpm=sum(sm,s=>s.hpp),fx=fixedTotal(),dm=dexRows().filter(r=>PR?(r.t>=PR[0]&&r.t<PR[1]):r.t>=m0).reduce((a,r)=>a+r.a,0);
  const t0=day0(Date.now()),days=[...Array(7)].map((_,i)=>t0-(6-i)*864e5),vals=days.map(d=>sum(allSales().filter(s=>day0(s.t)===d),s=>s.total)),mx=Math.max(1,...vals);
  const top={};ss.forEach(s=>s.items.forEach(x=>top[x.n]=(top[x.n]||0)+x.q));const tp=Object.entries(top).sort((a,b)=>b[1]-a[1]).slice(0,5);
  const byE={};ss.forEach(s=>byE[s.emp]=(byE[s.emp]||0)+s.total);
  const low=stns().flatMap(s=>ST.cfg.ing.filter(g=>qty(s[0],g.id)<g.m).map(g=>[s[1],g]));
- $('m-dash').innerHTML=`<div class="hd"><div><h2>Dashboard Owner</h2><p>Omzet semua station · real time</p></div><button class="btn p" id="xl">⬇ Unduh Excel</button></div>`+seg([['1','Hari ini'],['7','7 hari'],['m','Bulan ini'],['all','Semua']],per,'pr')+`<div style="display:flex;gap:8px;align-items:center;padding:0 14px 10px"><span>📅 Pilih bulan</span><select id="mpick" style="flex:1;padding:10px;border-radius:10px;border:1px solid #8886;background:transparent;color:inherit"><option value="">— bulan lain —</option>${monthOpts()}</select></div>`+
+ $('m-dash').innerHTML=`<div class="hd"><div><h2>Dashboard Owner</h2><p>Omzet semua station · real time</p></div><button class="btn p" id="xl">⬇ Unduh Excel</button></div>`+seg([['1','Hari ini'],['7','7 hari'],['m','Bulan ini'],['all','Semua']],per,'pr')+monthPick()+
  `<div class="kpis"><div class="kpi"><small>Omzet</small><b>${rp(om)}</b></div><div class="kpi"><small>Laba kotor</small><b>${rp(om-hp)}</b></div><div class="kpi"><small>Transaksi</small><b>${ss.length}</b></div><div class="kpi"><small>Item terjual</small><b>${it}</b></div></div>
- <div class="panel"><h3>Laba bersih bulan ini</h3><div class="ir"><span>Omzet</span><b>${rp(omm)}</b></div><div class="ir"><span>HPP bahan</span><b>${rp(-hpm)}</b></div><div class="ir"><span>Pengeluaran harian</span><b>${rp(-dm)}</b></div><div class="ir"><span>Pengeluaran tetap</span><b>${rp(-fx)}</b></div><div class="ir"><b>Laba bersih</b><b style="color:${omm-hpm-fx-dm<0?'var(--bad)':'var(--ok)'}">${rp(omm-hpm-fx-dm)}</b></div></div>
+ <div class="panel"><h3>Laba bersih ${PR?mlabel(per):'bulan ini'}</h3><div class="ir"><span>Omzet</span><b>${rp(omm)}</b></div><div class="ir"><span>HPP bahan</span><b>${rp(-hpm)}</b></div><div class="ir"><span>Pengeluaran harian</span><b>${rp(-dm)}</b></div><div class="ir"><span>Pengeluaran tetap</span><b>${rp(-fx)}</b></div><div class="ir"><b>Laba bersih</b><b style="color:${omm-hpm-fx-dm<0?'var(--bad)':'var(--ok)'}">${rp(omm-hpm-fx-dm)}</b></div></div>
  <div class="panel"><h3>Omzet 7 hari terakhir</h3><div class="bars">${vals.map((v,i)=>`<div><span>${v?Math.round(v/1000)+'rb':''}</span><i style="height:${v/mx*80}%"></i><span>${new Date(days[i]).toLocaleDateString('id-ID',{weekday:'short'})}</span></div>`).join('')}</div></div>
  <div class="grid2"><div class="panel"><h3>Per station</h3>${stns().map(s=>{const r=ss.filter(x=>x.stn===s[0]);return `<div class="ir"><span>${s[1]}<small>${r.length} transaksi</small></span><b>${rp(sum(r,x=>x.total))}</b></div>`}).join('')}</div>
  <div class="panel"><h3>Per karyawan</h3>${Object.entries(byE).map(x=>`<div class="ir"><span>${x[0]}</span><b>${rp(x[1])}</b></div>`).join('')||'<div class="empty">Belum ada penjualan.</div>'}</div>
@@ -510,19 +518,19 @@ function dash(){
  <div class="panel"><h3>Perlu restock</h3>${low.map(x=>`<div class="ir"><span>${x[1].n}<small>${x[0]}</small></span><b>${fmt(qty(stns().find(s=>s[1]===x[0])[0],x[1].id))} ${x[1].u}</b></div>`).join('')||'<div class="empty">Semua stok aman.</div>'}</div></div>`;
  $('xl').onclick=exportXlsx;
 }
-$('m-dash').onchange=e=>{if(e.target.id==='mpick'&&e.target.value){per=e.target.value;dash()}};
+$('m-dash').onchange=e=>{if(e.target.id==='mmon'||e.target.id==='myr'){const m=$('mmon').value,y=$('myr').value;pickY=+y;if(m){per=y+'-'+m;dash()}}};
 $('m-dash').onclick=e=>{const d=e.target.dataset;if(d.a==='pr'){per=d.v;dash()}};
 async function exportXlsx(){
  let dl=null;try{dl=window.claude?await window.claude.use('downloads'):null}catch(e){}
  
  if(typeof XLSX==='undefined')return toast('Pustaka Excel gagal dimuat');
  const ss=sales(),dt=t=>new Date(t).toLocaleString('id-ID'),om=ss.reduce((a,s)=>a+s.total,0),hp=ss.reduce((a,s)=>a+s.hpp,0);
+ const t0=day0(Date.now()),m0=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime(),MR=mrange(per),ps=MR?MR[0]:per==='all'?0:per==='1'?t0:per==='m'?m0:t0-6*864e5,pe=MR?MR[1]:Infinity,LGA=Object.values(ST.log).flatMap(d=>d.rows||[]).filter(x=>x.t>=ps),LG=LGA.filter(x=>x.t<pe),LA=LGA.filter(x=>x.t>=pe),DX=dexRows().filter(r=>r.t>=ps&&r.t<pe);
  const wb=XLSX.utils.book_new(),A=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n);
- A('Ringkasan',[['Laporan Sennika'],['Dibuat',dt(Date.now())],['Periode',mlabel(per)||{1:'Hari ini',7:'7 hari terakhir',m:'Bulan ini',all:'Semua'}[per]],[],['Omzet',om],['HPP',hp],['Laba kotor',om-hp],['Pengeluaran tetap / bulan',fixedTotal()],['Jumlah transaksi',ss.length]]);
+ A('Ringkasan',[['Laporan Sennika'],['Dibuat',dt(Date.now())],['Periode',mlabel(per)||{1:'Hari ini',7:'7 hari terakhir',m:'Bulan ini',all:'Semua'}[per]],[],['Omzet',om],['HPP',hp],['Laba kotor',om-hp],['Pengeluaran harian (periode ini)',DX.reduce((a,r)=>a+r.a,0)],['Pengeluaran tetap / bulan',fixedTotal()]].concat(MR?[['Laba bersih (setelah pengeluaran harian & tetap)',om-hp-DX.reduce((a,r)=>a+r.a,0)-fixedTotal()]]:[],[['Jumlah transaksi',ss.length]]));
  A('Penjualan',[['Waktu','Station','Karyawan','Menu','Suhu','Qty','Harga','Subtotal']].concat(ss.flatMap(s=>s.items.map(x=>[dt(s.t),sn(s.stn),s.emp,x.n,x.tmp,x.q,x.p,x.p*x.q]))));
  A('Inventory',[['Bahan','Satuan','Harga/satuan','Gudang',...stns().map(x=>x[1]),'Batas menipis']].concat(ST.cfg.ing.map(g=>[g.n,g.u,g.c,qty('gudang',g.id),...stns().map(x=>qty(x[0],g.id)),g.m])));
- A('Pergerakan Stok',[['Waktu','Jenis','Station','Karyawan','Bahan','Jumlah','Keterangan']].concat(Object.values(ST.log).flatMap(d=>d.rows||[]).sort((a,b)=>b.t-a.t).map(x=>[dt(x.t),x.k,sn(x.stn),x.emp,x.k==='jual'?Object.entries(x.d||{}).map(([i,q])=>q+' '+ig(i).n).join('; '):ig(x.i).n,x.k==='jual'?'':x.q,x.n||''])));
- const t0=day0(Date.now()),m0=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime(),MR=mrange(per),ps=MR?MR[0]:per==='all'?0:per==='1'?t0:per==='m'?m0:t0-6*864e5,pe=MR?MR[1]:Infinity,LGA=Object.values(ST.log).flatMap(d=>d.rows||[]).filter(x=>x.t>=ps),LG=LGA.filter(x=>x.t<pe),LA=LGA.filter(x=>x.t>=pe),DX=dexRows().filter(r=>r.t>=ps&&r.t<pe);
+ A('Pergerakan Stok',[['Waktu','Jenis','Station','Karyawan','Bahan','Jumlah','Keterangan']].concat(LG.slice().sort((a,b)=>b.t-a.t).map(x=>[dt(x.t),x.k,sn(x.stn),x.emp,x.k==='jual'?Object.entries(x.d||{}).map(([i,q])=>q+' '+ig(i).n).join('; '):ig(x.i).n,x.k==='jual'?'':x.q,x.n||''])));
  A('Pembelian Bahan',[['Waktu','Dibeli oleh','Bahan','Jumlah','Satuan','Total harga (Rp)']].concat(LG.filter(x=>x.k==='beli').map(x=>[dt(x.t),x.emp,ig(x.i).n,x.q,ig(x.i).u,x.h||''])));
  A('Pengeluaran Harian',[['Waktu','Station','Karyawan','Keterangan','Jumlah (Rp)']].concat(DX.map(r=>[dt(r.t),sn(r.stn),r.emp,r.n,r.a]),[['','','','Total',DX.reduce((a,r)=>a+r.a,0)]]));
  const fl=(L,st,g)=>{let mi=0,ke=0,op=0;L.forEach(x=>{if(x.k==='opname'&&x.i==g.id&&String(x.n).startsWith(sn(st)))op+=x.s!==undefined?x.s:(/naik/.test(x.n)?x.q:-x.q);
