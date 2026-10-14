@@ -163,7 +163,7 @@ const fmt=n=>(Math.round(n*100)/100).toLocaleString('id-ID');
 const num=s=>{s=String(s).trim();if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');return parseFloat(s)||0};
 const dayS=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const day0=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};
-const STN0=[['basecamp','Basecamp'],['gerobak1','Gerobak 1'],['gerobak2','Gerobak 2']];
+const STN0=[['basecamp','Basecamp']];
 const stns=()=>(ST.cfg&&ST.cfg.stn&&ST.cfg.stn.length)?ST.cfg.stn:STN0;
 const sn=id=>id==='gudang'?'Gudang':(stns().find(x=>x[0]===id)||[0,id])[1];
 const MENU=[{"id": 1, "n": "Espreso", "p": 12000, "e": "☕", "c": "Coffee", "t": 0, "g": ["#4A5568", "#1F2933"]}, {"id": 2, "n": "Americano panas", "p": 15000, "e": "☕", "c": "Coffee", "t": 0, "g": ["#4A5568", "#1F2933"]}, {"id": 3, "n": "Americano dingin", "p": 18000, "e": "🧊", "c": "Coffee", "t": 0, "g": ["#C98A5B", "#7A4A2B"]}, {"id": 4, "n": "Long black panas", "p": 15000, "e": "☕", "c": "Coffee", "t": 0, "g": ["#4A5568", "#1F2933"]}, {"id": 5, "n": "Long black dingin", "p": 18000, "e": "🧊", "c": "Coffee", "t": 0, "g": ["#C98A5B", "#7A4A2B"]}, {"id": 6, "n": "Sarmin", "p": 14000, "e": "☕", "c": "Coffee", "t": 0, "g": ["#C98A5B", "#7A4A2B"]}, {"id": 7, "n": "Sanger fushion panas", "p": 16000, "e": "☕", "c": "Coffee", "t": 0, "g": ["#C98A5B", "#7A4A2B"]}, {"id": 8, "n": "Sanger fushion dingin", "p": 18000, "e": "🥤", "c": "Coffee", "t": 0, "g": ["#C98A5B", "#7A4A2B"]}, {"id": 9, "n": "Oscuro latte panas", "p": 20000, "e": "🥛", "c": "Coffee", "t": 0, "g": ["#C98A5B", "#7A4A2B"]}, {"id": 10, "n": "Oscuro latte dingin", "p": 22000, "e": "🥛", "c": "Coffee", "t": 0, "g": ["#C98A5B", "#7A4A2B"]}, {"id": 11, "n": "Kopi susu sennika", "p": 22000, "e": "🥤", "c": "Coffee", "t": 0, "g": ["#C98A5B", "#7A4A2B"], "b": "Signature"}, {"id": 12, "n": "Coffee latte", "p": 18000, "e": "🥛", "c": "Coffee", "t": 0, "g": ["#C98A5B", "#7A4A2B"]}, {"id": 13, "n": "Chocolate panas", "p": 18000, "e": "🍫", "c": "Non-Coffee", "t": 0, "g": ["#A0634A", "#5A2E22"]}, {"id": 14, "n": "Chocolate dingin", "p": 20000, "e": "🍫", "c": "Non-Coffee", "t": 0, "g": ["#A0634A", "#5A2E22"]}, {"id": 15, "n": "Red velvet panas", "p": 18000, "e": "🍓", "c": "Non-Coffee", "t": 0, "g": ["#E5707E", "#A3243B"]}, {"id": 16, "n": "Red velvet dingin", "p": 20000, "e": "🍓", "c": "Non-Coffee", "t": 0, "g": ["#E5707E", "#A3243B"]}, {"id": 17, "n": "Matcha rain", "p": 20000, "e": "🍵", "c": "Non-Coffee", "t": 0, "g": ["#9CCB7A", "#4F8A3C"]}, {"id": 18, "n": "Blueberry cloud", "p": 20000, "e": "🫐", "c": "Non-Coffee", "t": 0, "g": ["#8E8CD8", "#4B3F9E"]}, {"id": 19, "n": "Classic tea panas", "p": 13000, "e": "🫖", "c": "Non-Coffee", "t": 0, "g": ["#E3B66E", "#B07A2E"]}, {"id": 20, "n": "Classic tea dingin", "p": 15000, "e": "🧊", "c": "Non-Coffee", "t": 0, "g": ["#E3B66E", "#B07A2E"]}, {"id": 21, "n": "Lemon tea panas", "p": 15000, "e": "🍋", "c": "Tea", "t": 0, "g": ["#F7DC6F", "#E0A82E"]}, {"id": 22, "n": "Lemon tea dingin", "p": 18000, "e": "🍋", "c": "Tea", "t": 0, "g": ["#F7DC6F", "#E0A82E"]}, {"id": 23, "n": "Leci tea panas", "p": 15000, "e": "🍒", "c": "Tea", "t": 0, "g": ["#F4A6B7", "#C8566E"]}, {"id": 24, "n": "Leci tea dingin", "p": 18000, "e": "🍒", "c": "Tea", "t": 0, "g": ["#F4A6B7", "#C8566E"]}, {"id": 25, "n": "Thai tea dingin", "p": 18000, "e": "🧋", "c": "Tea", "t": 0, "g": ["#F2A65A", "#C8601F"]}, {"id": 26, "n": "Air mineral", "p": 5000, "e": "💧", "c": "Additional", "t": 0, "g": ["#9EDCF0", "#3C9BC4"]}, {"id": 27, "n": "Air hangat", "p": 2000, "e": "♨️", "c": "Additional", "t": 0, "g": ["#9EDCF0", "#3C9BC4"]}, {"id": 28, "n": "Es kosong", "p": 2000, "e": "🧊", "c": "Additional", "t": 0, "g": ["#9EDCF0", "#3C9BC4"]}];
@@ -206,7 +206,7 @@ function genDemo(){
 function seedAll(){
  if(seeding)return;seeding=true;
  ST.cfg={ing:SEEDI.map(a=>({id:a[0],n:a[1],u:a[2],c:a[3],m:a[4]})),
-  ver:5,stn:STN0.map(x=>x.slice()),rec:SEEDREC,
+  ver:5,cleanedG:1,stn:STN0.map(x=>x.slice()),rec:SEEDREC,
   emps:[{id:1,name:'Fendi Alamsyah',pin:'1111',stn:'basecamp'}],
   ownerPin:'1234',fixed:[{id:1,n:'Wifi / internet',a:241000},{id:2,n:'Air',a:50000},{id:3,n:'Listrik',a:1000000},{id:4,n:'Kebersihan',a:100000},{id:5,n:'Sewa rumah',a:1500000},{id:6,n:'Penyusutan mesin & alat bar',a:193611},{id:7,n:'Penyusutan showcase & freezer',a:316389},{id:8,n:'Penyusutan tatakan kursi & meja',a:41667},{id:9,n:'Penyusutan las meja & kursi',a:83333},{id:10,n:'Gaji karyawan',a:1820000}]};
  saveCfg();
@@ -226,6 +226,7 @@ async function fbDB(){
   appId:"1:476542991117:web:1c66d981f85fda3bd34e44"});
  const db=D.getDatabase(app),R=p=>D.ref(db,'kasir/'+p),P=v=>{try{return JSON.parse(v)}catch(e){return null}};
  return{
+  clean:async ids=>{for(const c of ['stock','sales','log','dexp']){const sn=await D.get(R(c));const ks=[];sn.forEach(ch=>{if(ids.some(i=>ch.key===i||ch.key.endsWith('_'+i)))ks.push(ch.key)});for(const k of ks)await D.remove(R(c+'/'+k))}},
   doc:p=>({
    set:d=>D.set(R(p),JSON.stringify(d)),
    onSnapshot:(cb,er)=>D.onValue(R(p),s=>cb({exists:s.exists(),data:()=>P(s.val())}),er)
@@ -237,11 +238,22 @@ async function fbDB(){
     if(f)a.sort((x,y)=>((x.v||{})[f]>(y.v||{})[f]?1:-1)*(dir==='desc'?-1:1));
     if(n)a=a.slice(0,n);cb({docs:a.map(x=>({id:x.id,data:()=>x.v}))})},er)}};return q}
  }}
+/* Hapus data Gerobak 1 & 2 (sekali jalan) */
+function cleanG(){
+ const G=['gerobak1','gerobak2'];
+ ST.cfg.cleanedG=1;
+ ST.cfg.stn=stns().filter(x=>!G.includes(x[0])).map(x=>x.slice());
+ if(!ST.cfg.stn.length)ST.cfg.stn=STN0.map(x=>x.slice());
+ (ST.cfg.emps||[]).forEach(e=>{if(G.includes(e.stn))e.stn=ST.cfg.stn[0][0]});
+ ['stock','sales','log','dexp'].forEach(c=>Object.keys(ST[c]||{}).forEach(k=>{if(G.some(g=>k===g||k.endsWith('_'+g)))delete ST[c][k]}));
+ if(DB&&DB.clean)DB.clean(G).catch(e=>console.error(e));
+ saveCfg();
+}
 async function init(){
  try{DB=await fbDB()}catch(e){DB=null;console.error(e)}
  const err=()=>toast('Koneksi data terputus');
  if(DB){
-  DB.doc('cfg/main').onSnapshot(s=>{if(s.exists&&s.data().ver===5)ST.cfg=s.data();else if(!ST.cfg||s.exists)seedAll();ready()},err);
+  DB.doc('cfg/main').onSnapshot(s=>{if(s.exists&&s.data().ver===5){ST.cfg=s.data();if(!ST.cfg.cleanedG)cleanG()}else if(!ST.cfg||s.exists)seedAll();ready()},err);
   const col=(c,q)=>q.onSnapshot(s=>{ST[c]={};s.docs.forEach(d=>ST[c][d.id]=d.data());ready()},err);
   col('stock',DB.collection('stock'));
   col('sales',DB.collection('sales').orderBy('day','desc').limit(120));
@@ -249,7 +261,7 @@ async function init(){
   col('log',DB.collection('log').orderBy('day','desc').limit(60));
  }else{
   try{const l=JSON.parse(localStorage.getItem(LKEY));if(l&&l.cfg)ST=l}catch(e){}
-  if(!ST.cfg)seedAll();ready();
+  if(!ST.cfg)seedAll();else if(!ST.cfg.cleanedG)cleanG();ready();
  }
 }
 const ing=id=>ST.cfg.ing.find(x=>x.id==id),ig=id=>ing(id)||{n:'(dihapus)',u:'',c:0,m:0},mn=id=>MENU.find(m=>m.id==id);
@@ -492,7 +504,7 @@ async function exportXlsx(){
  const wb=XLSX.utils.book_new(),A=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n);
  A('Ringkasan',[['Laporan Sennika'],['Dibuat',dt(Date.now())],['Periode',mlabel(per)||{1:'Hari ini',7:'7 hari terakhir',m:'Bulan ini',all:'Semua'}[per]],[],['Omzet',om],['HPP',hp],['Laba kotor',om-hp],['Pengeluaran tetap / bulan',fixedTotal()],['Jumlah transaksi',ss.length]]);
  A('Penjualan',[['Waktu','Station','Karyawan','Menu','Suhu','Qty','Harga','Subtotal']].concat(ss.flatMap(s=>s.items.map(x=>[dt(s.t),sn(s.stn),s.emp,x.n,x.tmp,x.q,x.p,x.p*x.q]))));
- A('Inventory',[['Bahan','Satuan','Harga/satuan','Gudang','Basecamp','Gerobak 1','Gerobak 2','Batas menipis']].concat(ST.cfg.ing.map(g=>[g.n,g.u,g.c,qty('gudang',g.id),qty('basecamp',g.id),qty('gerobak1',g.id),qty('gerobak2',g.id),g.m])));
+ A('Inventory',[['Bahan','Satuan','Harga/satuan','Gudang',...stns().map(x=>x[1]),'Batas menipis']].concat(ST.cfg.ing.map(g=>[g.n,g.u,g.c,qty('gudang',g.id),...stns().map(x=>qty(x[0],g.id)),g.m])));
  A('Pergerakan Stok',[['Waktu','Jenis','Station','Karyawan','Bahan','Jumlah','Keterangan']].concat(Object.values(ST.log).flatMap(d=>d.rows||[]).sort((a,b)=>b.t-a.t).map(x=>[dt(x.t),x.k,sn(x.stn),x.emp,x.k==='jual'?Object.entries(x.d||{}).map(([i,q])=>q+' '+ig(i).n).join('; '):ig(x.i).n,x.k==='jual'?'':x.q,x.n||''])));
  const t0=day0(Date.now()),m0=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime(),MR=mrange(per),ps=MR?MR[0]:per==='all'?0:per==='1'?t0:per==='m'?m0:t0-6*864e5,pe=MR?MR[1]:Infinity,LGA=Object.values(ST.log).flatMap(d=>d.rows||[]).filter(x=>x.t>=ps),LG=LGA.filter(x=>x.t<pe),LA=LGA.filter(x=>x.t>=pe),DX=dexRows().filter(r=>r.t>=ps&&r.t<pe);
  A('Pembelian Bahan',[['Waktu','Dibeli oleh','Bahan','Jumlah','Satuan','Total harga (Rp)']].concat(LG.filter(x=>x.k==='beli').map(x=>[dt(x.t),x.emp,ig(x.i).n,x.q,ig(x.i).u,x.h||''])));
